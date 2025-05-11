@@ -10,25 +10,20 @@ ARQUIVO_COMENTARIOS = "comentarios.txt"
 def obter_comentarios():
     try:
         with open(ARQUIVO_COMENTARIOS, "r", encoding="utf-8") as f:
-            conteudo = f.read().strip()
-            comentarios = conteudo.split("\n\n") if conteudo else []
+            comentarios = f.read()
     except FileNotFoundError:
-        comentarios = []
-
+        comentarios = "Nenhum comentário ainda."
+    
     return jsonify({"comentarios": comentarios})
 
-@app.route('/comentarios', methods=['POST'])
-def adicionar_comentario():
-    data = request.get_json()
-    comentario = data.get("comentario", "").strip()
+@app.route('/comentar', methods=['POST'])
+def comentar():
+    comentario = request.json.get("comentario", "").strip()
+    if comentario:
+        with open(ARQUIVO_COMENTARIOS, "a", encoding="utf-8") as f:
+            f.write(comentario + "\n\n")
+    return jsonify({"message": "Comentário adicionado com sucesso!"}), 201
 
-    if not comentario:
-        return jsonify({"erro": "Comentário vazio"}), 400
-
-    with open(ARQUIVO_COMENTARIOS, "a", encoding="utf-8") as f:
-        f.write(comentario + "\n\n")
-
-    return jsonify({"mensagem": "Comentário salvo com sucesso!"}), 201
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
